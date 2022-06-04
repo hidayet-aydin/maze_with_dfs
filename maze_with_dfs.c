@@ -152,6 +152,111 @@ void randomAppleSeeding(int maze[MAX][MAX], int y, int x)
     }
 }
 
+node *createNode(int y, int x)
+{
+    node *new = malloc(sizeof(node));
+    new->y = y;
+    new->x = x;
+    new->next = NULL;
+    return new;
+}
+
+void addEdge(struct Graph *graph, int srcY, int srcX, int destY, int destX)
+{
+    int notFound = 1;
+    node *ptr = graph->adjacents[srcY][srcX];
+    while (ptr != NULL && notFound)
+    {
+        if (ptr->y == destY && ptr->x == destX)
+        {
+            notFound = 0;
+        }
+        ptr = ptr->next;
+    }
+
+    if (notFound)
+    {
+        // edge src -> dest
+        node *newNode = createNode(destY, destX);
+        newNode->next = graph->adjacents[srcY][srcX];
+        graph->adjacents[srcY][srcX] = newNode;
+
+        // edge dest -> src
+        newNode = createNode(srcY, srcX);
+        newNode->next = graph->adjacents[destY][destX];
+        graph->adjacents[destY][destX] = newNode;
+    }
+}
+
+struct Graph *createGraph(int maze[MAX][MAX], int y, int x)
+{
+    struct Graph *graph = malloc(sizeof(struct Graph));
+    graph->sizeY = y;
+    graph->sizeX = x;
+    graph->hit = 0;
+    graph->apple = 0;
+
+    int i, k;
+    for (i = 0; i < y + 1; i++)
+    {
+        for (k = 0; k < x + 1; k++)
+        {
+            graph->visit[i][k] = 0;
+            graph->adjacents[i][k] = NULL;
+        }
+    }
+
+    for (i = 1; i < y; i = i + 2)
+    {
+        for (k = 1; k < x; k = k + 2)
+        {
+            if (maze[i][k] != 0)
+            {
+                if (maze[i - 1][k] != 0)
+                {
+                    addEdge(graph, i, k, i - 2, k);
+                }
+                if (maze[i + 1][k] != 0)
+                {
+                    addEdge(graph, i, k, i + 2, k);
+                }
+                if (maze[i][k - 1] != 0)
+                {
+                    addEdge(graph, i, k, i, k - 2);
+                }
+                if (maze[i][k + 1] != 0)
+                {
+                    addEdge(graph, i, k, i, k + 2);
+                }
+            }
+        }
+    }
+
+    return graph;
+}
+
+void printGraph(struct Graph *graph)
+{
+    int y, x;
+    for (y = 1; y < graph->sizeY + 1; y++)
+    {
+        for (x = 1; x < graph->sizeX + 1; x++)
+        {
+            node *temp = graph->adjacents[y][x];
+            if (temp)
+            {
+                printf("\n Adjacency list of vertex %i, %i\n ", y, x);
+                while (temp)
+                {
+                    printf("%d, %d -> ", temp->y, temp->x);
+                    temp = temp->next;
+                }
+                printf("\n");
+            }
+        }
+    }
+}
+
 int main(void)
 {
     system(CLEAR);
@@ -164,6 +269,9 @@ int main(void)
     mazeLoadFromFile(maze, &mazeSizeY, &mazeSizeX, &startY, &startX, &finishY, &finishX);
     randomAppleSeeding(maze, mazeSizeY, mazeSizeX);
     printMaze(maze, mazeSizeY, mazeSizeX);
+
+    struct Graph *graph = createGraph(maze, mazeSizeY, mazeSizeX);
+    printGraph(graph);
 
     return 0;
 }
