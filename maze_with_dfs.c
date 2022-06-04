@@ -2,9 +2,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define MAX 1000
 #define CLEAR "clear"
+
+typedef struct node
+{
+    int y;
+    int x;
+    struct node *next;
+} node;
+
+struct Graph
+{
+    int sizeY;
+    int sizeX;
+    int hit;
+    int apple;
+    int visit[MAX][MAX];
+    node *adjacents[MAX][MAX];
+};
 
 int mazeLoadFromFile(int maze[MAX][MAX], int *sizeY, int *sizeX, int *startY, int *startX, int *finishY, int *finishX)
 {
@@ -110,15 +128,41 @@ void printMaze(int maze[MAX][MAX], int y, int x)
     printf("\n");
 }
 
+void randomAppleSeeding(int maze[MAX][MAX], int y, int x)
+{
+    int i, k, a;
+    for (i = 0; i < y; i++)
+    {
+        for (k = 0; k < x; k++)
+        {
+            if (i % 2 == 1 && k % 2 == 1 && maze[i][k] == 1)
+            {
+                a = rand() % 9;
+                if (a == 0)
+                {
+                    a = 4;
+                }
+                else
+                {
+                    a = 1;
+                }
+                maze[i][k] = a;
+            }
+        }
+    }
+}
+
 int main(void)
 {
     system(CLEAR);
+    srand(time(0));
 
     int mazeSizeY, mazeSizeX;
     int startY, startX, finishY, finishX;
     int maze[MAX][MAX];
 
     mazeLoadFromFile(maze, &mazeSizeY, &mazeSizeX, &startY, &startX, &finishY, &finishX);
+    randomAppleSeeding(maze, mazeSizeY, mazeSizeX);
     printMaze(maze, mazeSizeY, mazeSizeX);
 
     return 0;
