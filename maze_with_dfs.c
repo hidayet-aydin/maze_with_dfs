@@ -257,6 +257,24 @@ void printGraph(struct Graph *graph)
     }
 }
 
+void DFS(int maze[MAX][MAX], struct Graph *graph, int y, int x)
+{
+    node *adjacent = graph->adjacents[y][x];
+
+    while (adjacent)
+    {
+        int connectedY = adjacent->y;
+        int connectedX = adjacent->x;
+        maze[adjacent->y][adjacent->x] = 5;
+        if (graph->visit[connectedY][connectedX] == 0)
+        {
+            graph->visit[y][x] = 1;
+            DFS(maze, graph, connectedY, connectedX);
+        }
+        adjacent = adjacent->next;
+    }
+}
+
 int main(void)
 {
     system(CLEAR);
@@ -271,7 +289,9 @@ int main(void)
     printMaze(maze, mazeSizeY, mazeSizeX);
 
     struct Graph *graph = createGraph(maze, mazeSizeY, mazeSizeX);
-    printGraph(graph);
+    // printGraph(graph);
+    DFS(maze, graph, startY, startX);
+    printMaze(maze, mazeSizeY, mazeSizeX);
 
     return 0;
 }
