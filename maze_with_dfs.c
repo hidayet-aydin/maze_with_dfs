@@ -257,22 +257,34 @@ void printGraph(struct Graph *graph)
     }
 }
 
-void DFS(int maze[MAX][MAX], struct Graph *graph, int y, int x)
+int dfsPathFinder(int maze[MAX][MAX], int sizeY, int sizeX, struct Graph *graph, int startY, int startX, int finishY, int finishX)
 {
-    node *adjacent = graph->adjacents[y][x];
+    node *adjacent = graph->adjacents[startY][startX];
 
-    while (adjacent)
+    int result = 0;
+    while (adjacent && result == 0)
     {
-        int connectedY = adjacent->y;
-        int connectedX = adjacent->x;
-        maze[adjacent->y][adjacent->x] = 5;
-        if (graph->visit[connectedY][connectedX] == 0)
+        int adjacentY = adjacent->y;
+        int adjacentX = adjacent->x;
+
+        if (adjacentY == finishY && adjacentX == finishX)
         {
-            graph->visit[y][x] = 1;
-            DFS(maze, graph, connectedY, connectedX);
+            result = 1;
         }
-        adjacent = adjacent->next;
+        else
+        {
+            maze[adjacentY][adjacentX] = 5;
+            if (graph->visit[adjacentY][adjacentX] == 0)
+            {
+                graph->visit[startY][startX] = 1;
+                result = dfsPathFinder(maze, sizeY, sizeX, graph, adjacentY, adjacentX, finishY, finishX);
+            }
+
+            adjacent = adjacent->next;
+        }
     }
+
+    return result;
 }
 
 int main(void)
@@ -286,11 +298,10 @@ int main(void)
 
     mazeLoadFromFile(maze, &mazeSizeY, &mazeSizeX, &startY, &startX, &finishY, &finishX);
     randomAppleSeeding(maze, mazeSizeY, mazeSizeX);
-    printMaze(maze, mazeSizeY, mazeSizeX);
 
     struct Graph *graph = createGraph(maze, mazeSizeY, mazeSizeX);
     // printGraph(graph);
-    DFS(maze, graph, startY, startX);
+    dfsPathFinder(maze, mazeSizeY, mazeSizeX, graph, startY, startX, finishY, finishX);
     printMaze(maze, mazeSizeY, mazeSizeX);
 
     return 0;
