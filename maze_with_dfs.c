@@ -261,6 +261,9 @@ int dfsPathFinder(int maze[MAX][MAX], int sizeY, int sizeX, struct Graph *graph,
 {
     node *adjacent = graph->adjacents[startY][startX];
 
+    int stackInd = 0;
+    node *stack[MAX];
+
     int result = 0;
     while (adjacent && result == 0)
     {
@@ -273,11 +276,35 @@ int dfsPathFinder(int maze[MAX][MAX], int sizeY, int sizeX, struct Graph *graph,
         }
         else
         {
+            if (maze[adjacentY][adjacentX] != 5)
+            {
+                maze[adjacentY][adjacentX] = 5;
+
+                node *newItem = malloc(sizeof(node));
+                newItem->y = adjacentY;
+                newItem->x = adjacentX;
+                stack[stackInd] = newItem;
+                stackInd++;
+            }
+
             maze[adjacentY][adjacentX] = 5;
             if (graph->visit[adjacentY][adjacentX] == 0)
             {
                 graph->visit[startY][startX] = 1;
                 result = dfsPathFinder(maze, sizeY, sizeX, graph, adjacentY, adjacentX, finishY, finishX);
+                if (result == 0)
+                {
+                    int index = 0;
+                    for (index = stackInd; index > 0; index--)
+                    {
+                        node *getNode = stack[index - 1];
+
+                        if (maze[getNode->y][getNode->x] != 1)
+                        {
+                            maze[getNode->y][getNode->x] = 1;
+                        }
+                    }
+                }
             }
 
             adjacent = adjacent->next;
@@ -300,7 +327,7 @@ int main(void)
     randomAppleSeeding(maze, mazeSizeY, mazeSizeX);
 
     struct Graph *graph = createGraph(maze, mazeSizeY, mazeSizeX);
-    // printGraph(graph);
+    
     dfsPathFinder(maze, mazeSizeY, mazeSizeX, graph, startY, startX, finishY, finishX);
     printMaze(maze, mazeSizeY, mazeSizeX);
 
