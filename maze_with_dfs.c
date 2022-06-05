@@ -306,7 +306,21 @@ void render(int maze[MAX][MAX], struct Graph *graph, int delay, int y, int x)
         }
         printf("\n");
     }
+    printf("\n10 x apple:%i - 5 x hit:%i \n", graph->apple, graph->hit);
+    printf("Score: [%i] \n", graph->apple * 10 - graph->hit * 5);
     usleep(delay);
+}
+
+int countAdjacents(node *getNode)
+{
+    int cnt = 0;
+    node *ptr = getNode;
+    while (ptr)
+    {
+        cnt++;
+        ptr = ptr->next;
+    }
+    return cnt;
 }
 
 int dfsPathFinder(int maze[MAX][MAX], int sizeY, int sizeX, struct Graph *graph, int delay, int startY, int startX, int finishY, int finishX)
@@ -330,6 +344,11 @@ int dfsPathFinder(int maze[MAX][MAX], int sizeY, int sizeX, struct Graph *graph,
         {
             if (maze[adjacentY][adjacentX] != 5)
             {
+                if (maze[adjacentY][adjacentX] == 4)
+                {
+                    graph->apple += 1;
+                }
+
                 maze[adjacentY][adjacentX] = 5;
 
                 node *newItem = malloc(sizeof(node));
@@ -348,10 +367,22 @@ int dfsPathFinder(int maze[MAX][MAX], int sizeY, int sizeX, struct Graph *graph,
                 result = dfsPathFinder(maze, sizeY, sizeX, graph, delay, adjacentY, adjacentX, finishY, finishX);
                 if (result == 0)
                 {
+                    int chk = 0;
                     int index = 0;
                     for (index = stackInd; index > 0; index--)
                     {
                         node *getNode = stack[index - 1];
+
+                        if (chk == 0)
+                        {
+                            node *selAdjacent = graph->adjacents[getNode->y][getNode->x];
+                            int res = countAdjacents(selAdjacent);
+                            if (res == 1)
+                            {
+                                graph->hit++;
+                            }
+                            chk++;
+                        }
 
                         if (maze[getNode->y][getNode->x] != 1)
                         {
@@ -382,8 +413,8 @@ int main(void)
     randomAppleSeeding(maze, mazeSizeY, mazeSizeX);
 
     struct Graph *graph = createGraph(maze, mazeSizeY, mazeSizeX);
-    
-    int delay = 10 * 1000;
+
+    int delay = 1000 * 1000;
     dfsPathFinder(maze, mazeSizeY, mazeSizeX, graph, delay, startY, startX, finishY, finishX);
 
     return 0;
