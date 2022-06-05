@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 #define MAX 1000
 #define CLEAR "clear"
@@ -257,7 +258,58 @@ void printGraph(struct Graph *graph)
     }
 }
 
-int dfsPathFinder(int maze[MAX][MAX], int sizeY, int sizeX, struct Graph *graph, int startY, int startX, int finishY, int finishX)
+void render(int maze[MAX][MAX], struct Graph *graph, int delay, int y, int x)
+{
+    system(CLEAR);
+
+    int i, k;
+    for (i = 0; i < y; i++)
+    {
+        for (k = 0; k < x; k++)
+        {
+            if (i % 2 == 0 && k % 2 == 0 && maze[i][k] == 0)
+            {
+                printf("+");
+            }
+            else if (i % 2 == 0 && maze[i][k] == 0)
+            {
+                printf("-");
+            }
+            else if (k % 2 == 0 && maze[i][k] == 0)
+            {
+                printf("|");
+            }
+            else if (maze[i][k] == 1)
+            {
+                printf(" ");
+            }
+            else if (maze[i][k] == 2)
+            {
+                printf("b");
+            }
+            else if (maze[i][k] == 3)
+            {
+                printf("c");
+            }
+            else if (maze[i][k] == 4)
+            {
+                printf("O");
+            }
+            else if (maze[i][k] == 5)
+            {
+                printf("*");
+            }
+            else
+            {
+                printf("%i", maze[i][k]);
+            }
+        }
+        printf("\n");
+    }
+    usleep(delay);
+}
+
+int dfsPathFinder(int maze[MAX][MAX], int sizeY, int sizeX, struct Graph *graph, int delay, int startY, int startX, int finishY, int finishX)
 {
     node *adjacent = graph->adjacents[startY][startX];
 
@@ -285,13 +337,15 @@ int dfsPathFinder(int maze[MAX][MAX], int sizeY, int sizeX, struct Graph *graph,
                 newItem->x = adjacentX;
                 stack[stackInd] = newItem;
                 stackInd++;
+
+                render(maze, graph, delay, sizeY, sizeX);
             }
 
             maze[adjacentY][adjacentX] = 5;
             if (graph->visit[adjacentY][adjacentX] == 0)
             {
                 graph->visit[startY][startX] = 1;
-                result = dfsPathFinder(maze, sizeY, sizeX, graph, adjacentY, adjacentX, finishY, finishX);
+                result = dfsPathFinder(maze, sizeY, sizeX, graph, delay, adjacentY, adjacentX, finishY, finishX);
                 if (result == 0)
                 {
                     int index = 0;
@@ -302,6 +356,7 @@ int dfsPathFinder(int maze[MAX][MAX], int sizeY, int sizeX, struct Graph *graph,
                         if (maze[getNode->y][getNode->x] != 1)
                         {
                             maze[getNode->y][getNode->x] = 1;
+                            render(maze, graph, delay, sizeY, sizeX);
                         }
                     }
                 }
@@ -328,8 +383,8 @@ int main(void)
 
     struct Graph *graph = createGraph(maze, mazeSizeY, mazeSizeX);
     
-    dfsPathFinder(maze, mazeSizeY, mazeSizeX, graph, startY, startX, finishY, finishX);
-    printMaze(maze, mazeSizeY, mazeSizeX);
+    int delay = 10 * 1000;
+    dfsPathFinder(maze, mazeSizeY, mazeSizeX, graph, delay, startY, startX, finishY, finishX);
 
     return 0;
 }
