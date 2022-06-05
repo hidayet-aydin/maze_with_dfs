@@ -31,17 +31,17 @@ typedef struct Graph
     node *adjacents[MAX][MAX];
 } Graph;
 
-int mazeLoadFromFile(int[MAX][MAX], int *, int *, int *, int *, int *, int *);
-void randomAppleSeeding(int[MAX][MAX], int, int);
+int mazeLoadFromFile(int **, int *, int *, int *, int *, int *, int *);
+void randomAppleSeeding(int **, int, int);
 
 node *createNode(int, int);
 void addEdge(Graph *, int, int, int, int);
-Graph *createGraph(int[MAX][MAX], int, int);
+Graph *createGraph(int **, int, int);
 
-void render(int[MAX][MAX], Graph *, int, int, int);
+void render(int **, Graph *, int, int, int);
 int countAdjacents(node *);
 
-int dfsPathFinder(int maze[MAX][MAX], int sizeY, int sizeX, Graph *graph, int delay, int startY, int startX, int finishY, int finishX)
+int dfsPathFinder(int **maze, int sizeY, int sizeX, Graph *graph, int delay, int startY, int startX, int finishY, int finishX)
 {
     node *adjacent = graph->adjacents[startY][startX];
 
@@ -123,10 +123,15 @@ int main(void)
     system(CLEAR);
     srand(time(0));
 
+    int delay;
     int mazeSizeY, mazeSizeX;
     int startY, startX, finishY, finishX;
-    int maze[MAX][MAX];
-    int delay;
+
+    int **maze = (int **) malloc(MAX * sizeof(int *));
+    int i;
+    for (i = 0; i < MAX; i++) {
+        maze[i] = (int *) malloc(MAX * sizeof(int));
+    }
 
     mazeLoadFromFile(maze, &mazeSizeY, &mazeSizeX, &startY, &startX, &finishY, &finishX);
     randomAppleSeeding(maze, mazeSizeY, mazeSizeX);
@@ -141,7 +146,7 @@ int main(void)
     return 0;
 }
 
-int mazeLoadFromFile(int maze[MAX][MAX], int *sizeY, int *sizeX, int *startY, int *startX, int *finishY, int *finishX)
+int mazeLoadFromFile(int **maze, int *sizeY, int *sizeX, int *startY, int *startX, int *finishY, int *finishX)
 {
     FILE *fp;
     char *line;
@@ -196,7 +201,7 @@ int mazeLoadFromFile(int maze[MAX][MAX], int *sizeY, int *sizeX, int *startY, in
     return 1;
 }
 
-void randomAppleSeeding(int maze[MAX][MAX], int y, int x)
+void randomAppleSeeding(int **maze, int y, int x)
 {
     int i, k, a;
     for (i = 0; i < y; i++)
@@ -256,7 +261,7 @@ void addEdge(Graph *graph, int srcY, int srcX, int destY, int destX)
     }
 }
 
-Graph *createGraph(int maze[MAX][MAX], int y, int x)
+Graph *createGraph(int **maze, int y, int x)
 {
     Graph *graph = malloc(sizeof(Graph));
     graph->sizeY = y;
@@ -303,7 +308,7 @@ Graph *createGraph(int maze[MAX][MAX], int y, int x)
     return graph;
 }
 
-void render(int maze[MAX][MAX], Graph *graph, int delay, int y, int x)
+void render(int **maze, Graph *graph, int delay, int y, int x)
 {
     system(CLEAR);
 
