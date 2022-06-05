@@ -3,9 +3,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <unistd.h>
 
+#ifdef _WIN32
+#include <Windows.h>
+#define CLEAR "cls"
+#else
+#include <unistd.h>
 #define CLEAR "clear"
+#endif
+
 #define MAX 1000
 
 typedef struct node
